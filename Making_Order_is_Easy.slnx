@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="InventoryService/InventoryService.csproj" Id="319ad9bd-5feb-4570-b9d9-fec543b17f13" />
+  <Project Path="OrderService/OrderService.csproj" Id="f57d38b8-d617-402e-8d88-2413321525f9" />
+  <Project Path="Shared.Contracts/Shared.Contracts.csproj" />
+</Solution>
