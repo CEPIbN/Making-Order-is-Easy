@@ -1,18 +1,19 @@
-﻿using RabbitMQ.Client;
+﻿using PaymentService.Application.Services;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.Contracts.Events;
 using System.Text;
 using System.Text.Json;
-using InventoryService.Application.Services;
+using System.Threading.Channels;
 
-namespace InventoryService.Infrastructure.Consumers;
+namespace PaymentService.Infrastructure.Consumers;
 
-public class OrderCreatedConsumer : BackgroundService
+public class StockReservedConsumer : BackgroundService
 {
 	private readonly IServiceScopeFactory _scopeFactory;
 	private readonly IChannel _channel;
 
-	public OrderCreatedConsumer(
+	public StockReservedConsumer(
 		IServiceScopeFactory scopeFactory,
 		IChannel channel)
 	{
@@ -23,7 +24,7 @@ public class OrderCreatedConsumer : BackgroundService
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		await _channel.QueueDeclareAsync(
-			queue: nameof(OrderCreated),
+			queue: nameof(StockReserved),
 			durable: true,
 			exclusive: false,
 			autoDelete: false);
@@ -33,21 +34,21 @@ public class OrderCreatedConsumer : BackgroundService
 		consumer.ReceivedAsync += async (_, ea) =>
 		{
 			using var scope = _scopeFactory.CreateScope();
-			var service = scope.ServiceProvider.GetRequiredService<InventoryServiceType>();
+			var service = scope.ServiceProvider.GetRequiredService<PaymentServiceType>();
 
 			var json = Encoding.UTF8.GetString(ea.Body.Span);
-			var evt = JsonSerializer.Deserialize<OrderCreated>(json)!;
+			var evt = JsonSerializer.Deserialize<StockReserved>(json)!;
 
-			await service.HandleOrderCreated(
+			await service.HandleStockReserved(
 				evt.OrderId,
-				evt.ProductId,
-				evt.Quantity);
+				amount: 100 // для примера, дальше можно брать из Order
+			);
 
 			await _channel.BasicAckAsync(ea.DeliveryTag, false);
 		};
 
 		await _channel.BasicConsumeAsync(
-			queue: nameof(OrderCreated),
+			queue: nameof(StockReserved),
 			autoAck: false,
 			consumer: consumer);
 

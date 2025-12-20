@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
-using InventoryService.Infrastructure.Persistence;
+using PaymentService.Infrastructure.Persistence;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
