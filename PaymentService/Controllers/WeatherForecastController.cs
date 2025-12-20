@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryService.Controllers
+namespace PaymentService.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]
