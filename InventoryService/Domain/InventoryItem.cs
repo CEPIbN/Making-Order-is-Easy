@@ -16,6 +16,7 @@ public class InventoryItem
 	public bool CanReserve(int quantity) =>
 		AvailableQuantity >= quantity;
 
+
 	public void Reserve(int quantity)
 	{
 		if (!CanReserve(quantity))

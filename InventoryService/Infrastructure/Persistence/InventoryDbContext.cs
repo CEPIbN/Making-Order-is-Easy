@@ -1,9 +1,10 @@
 ﻿using InventoryService.Domain;
 using Microsoft.EntityFrameworkCore;
+using Shared.OutBox;
 
 namespace InventoryService.Infrastructure.Persistence;
 
-public class InventoryDbContext : DbContext
+public class InventoryDbContext : DbContext, IOutboxDbContext
 {
 	public DbSet<InventoryItem> Inventory => Set<InventoryItem>();
 	public DbSet<Reservation> Reservations => Set<Reservation>();

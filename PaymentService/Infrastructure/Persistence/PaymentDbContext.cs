@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PaymentService.Domain;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+using Shared.OutBox;
 
 namespace PaymentService.Infrastructure.Persistence;
 
-public class PaymentDbContext : DbContext
+public class PaymentDbContext : DbContext, IOutboxDbContext
 {
 	public DbSet<Payment> Payments => Set<Payment>();
 	public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();

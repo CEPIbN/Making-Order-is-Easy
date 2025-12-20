@@ -8,7 +8,8 @@ namespace Shared.Contracts.Events;
 public record StockReserved(
 	Guid OrderId,
 	Guid ProductId,
-	int Quantity
+	int Quantity,
+	decimal Price
 ) : IIntegrationEvent
 {
 	public Guid EventId { get; } = Guid.NewGuid();

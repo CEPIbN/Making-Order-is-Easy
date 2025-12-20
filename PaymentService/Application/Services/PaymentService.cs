@@ -1,6 +1,7 @@
 ﻿using PaymentService.Domain;
 using PaymentService.Infrastructure.Persistence;
 using Shared.Contracts.Events;
+using Shared.OutBox;
 using System.Text.Json;
 
 namespace PaymentService.Application.Services;

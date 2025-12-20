@@ -1,4 +1,4 @@
-﻿namespace InventoryService.Infrastructure.Persistence;
+﻿namespace Shared.OutBox;
 
 public class OutboxMessage
 {

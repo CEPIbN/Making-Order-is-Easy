@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using OrderService.Application.Saga;
 using OrderService.Infrastructure.Consumers;
-using OrderService.Infrastructure.Messaging;
 using OrderService.Infrastructure.Persistence;
 using RabbitMQ.Client;
 using Serilog;
+using Shared.OutBox;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +46,7 @@ builder.Services.AddSingleton<IChannel>(sp =>
 });
 
 // -------------------- Outbox Publisher --------------------
-builder.Services.AddHostedService<OutboxPublisher>();
+builder.Services.AddHostedService<OutboxPublisher<OrderDbContext>>();
 
 // -------------------- Consumers --------------------
 builder.Services.AddHostedService<StockReservedConsumer>();

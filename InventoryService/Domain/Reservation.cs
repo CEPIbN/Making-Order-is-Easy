@@ -1,5 +1,8 @@
 ﻿namespace InventoryService.Domain;
 
+/// <summary>
+/// Объект зарезервированного заказа
+/// </summary>
 public class Reservation
 {
 	public Guid OrderId { get; private set; }

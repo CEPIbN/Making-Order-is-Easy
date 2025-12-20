@@ -1,10 +1,10 @@
-using InventoryService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using PaymentService.Application.Services;
 using PaymentService.Infrastructure.Consumers;
 using PaymentService.Infrastructure.Persistence;
 using RabbitMQ.Client;
 using Serilog;
+using Shared.OutBox;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +39,7 @@ builder.Services.AddSingleton<IChannel>(sp =>
 });
 
 // -------------------- Messaging --------------------
-builder.Services.AddHostedService<OutboxPublisher>();
+builder.Services.AddHostedService<OutboxPublisher<PaymentDbContext>>();
 builder.Services.AddHostedService<StockReservedConsumer>();
 
 var app = builder.Build();

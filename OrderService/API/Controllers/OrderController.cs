@@ -22,12 +22,12 @@ public class OrdersController : ControllerBase
 	{
 		var command = new CreateOrderCommand(_db);
 
-		var orderId = await command.ExecuteAsync(
+		var order = await command.ExecuteAsync(
 			request.ProductId,
 			request.Quantity,
 			request.Price);
 
-		return Accepted(new { OrderId = orderId });
+		return Accepted(new { OrderId = order.Item1, Status = order.Item2 });
 	}
 
 	[HttpGet("{id:guid}")]

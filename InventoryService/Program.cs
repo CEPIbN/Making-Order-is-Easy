@@ -1,11 +1,11 @@
 using InventoryService.Application.Services;
 using InventoryService.Infrastructure.Consumers;
-using InventoryService.Infrastructure.Messaging;
 using InventoryService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using Serilog;
+using Shared.OutBox;
 using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +41,7 @@ builder.Services.AddSingleton<IChannel>(sp =>
 });
 
 // -------------------- Messaging --------------------
-builder.Services.AddHostedService<OutboxPublisher>();
+builder.Services.AddHostedService<OutboxPublisher<InventoryDbContext>>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 
 var app = builder.Build();

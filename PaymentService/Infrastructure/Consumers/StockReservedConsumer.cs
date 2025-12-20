@@ -21,6 +21,11 @@ public class StockReservedConsumer : BackgroundService
 		_channel = channel;
 	}
 
+	/// <summary>
+	/// Comsumer слушает очередь StockReserved, запускает логику резервирования товаров
+	/// </summary>
+	/// <param name="stoppingToken"></param>
+	/// <returns></returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		await _channel.QueueDeclareAsync(
@@ -41,7 +46,7 @@ public class StockReservedConsumer : BackgroundService
 
 			await service.HandleStockReserved(
 				evt.OrderId,
-				amount: 100 // для примера, дальше можно брать из Order
+				amount: evt.Price // для примера, дальше можно брать из Order
 			);
 
 			await _channel.BasicAckAsync(ea.DeliveryTag, false);

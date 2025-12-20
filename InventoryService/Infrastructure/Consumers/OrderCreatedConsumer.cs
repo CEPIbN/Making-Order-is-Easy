@@ -20,6 +20,11 @@ public class OrderCreatedConsumer : BackgroundService
 		_channel = channel;
 	}
 
+	/// <summary>
+	/// Comsumer слушает очередь OrderCreated, запускает логику резервирования товаров
+	/// </summary>
+	/// <param name="stoppingToken"></param>
+	/// <returns></returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		await _channel.QueueDeclareAsync(
@@ -41,7 +46,8 @@ public class OrderCreatedConsumer : BackgroundService
 			await service.HandleOrderCreated(
 				evt.OrderId,
 				evt.ProductId,
-				evt.Quantity);
+				evt.Quantity,
+				evt.Price);
 
 			await _channel.BasicAckAsync(ea.DeliveryTag, false);
 		};

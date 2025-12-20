@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
-using PaymentService.Infrastructure.Persistence;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using System.Threading.Channels;
 using RabbitMQ.Client;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace InventoryService.Infrastructure.Messaging;
+namespace Shared.OutBox;
 
-public class OutboxPublisher : BackgroundService
+public class OutboxPublisher<TDbContext> : BackgroundService
+	where TDbContext : DbContext, IOutboxDbContext
 {
 	private readonly IServiceScopeFactory _scopeFactory;
 	private readonly IChannel _channel;
@@ -22,7 +24,7 @@ public class OutboxPublisher : BackgroundService
 		while (!stoppingToken.IsCancellationRequested)
 		{
 			using var scope = _scopeFactory.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+			var db = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
 			var messages = await db.OutboxMessages
 				.Where(x => x.ProcessedAt == null)
@@ -48,4 +50,3 @@ public class OutboxPublisher : BackgroundService
 		}
 	}
 }
-

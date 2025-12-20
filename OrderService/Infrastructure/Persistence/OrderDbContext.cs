@@ -1,10 +1,10 @@
 ﻿using OrderService.Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using Shared.OutBox;
 
 namespace OrderService.Infrastructure.Persistence;
 
-public class OrderDbContext : DbContext
+public class OrderDbContext : DbContext, IOutboxDbContext
 {
 	public DbSet<Order> Orders => Set<Order>();
 	public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
