@@ -4,10 +4,10 @@ WORKDIR /src
 COPY . .
 
 # восстанавливаем зависимости
-RUN dotnet restore OrderService/OrderService.csproj
+RUN dotnet restore Order.Service/Order.Service.csproj
 
 # публикуем сервис
-RUN dotnet publish Inventory.Service/Inventory.Service.csproj \
+RUN dotnet publish Order.Service/Order.Service.csproj \
     -c Release \
     -o /app/publish
 

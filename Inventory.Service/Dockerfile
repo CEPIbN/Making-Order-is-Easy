@@ -2,8 +2,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY . .
+
 # восстанавливаем зависимости
-RUN dotnet restore OrderService/OrderService.csproj
+RUN dotnet restore Inventory.Service/Inventory.Service.csproj
 
 # публикуем сервис
 RUN dotnet publish Inventory.Service/Inventory.Service.csproj \

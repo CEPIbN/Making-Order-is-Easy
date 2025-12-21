@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared.Contracts\Shared.Contracts.csproj" />
+	 <ProjectReference Include="..\Shared.OutBox\Shared.OutBox.csproj" />
   </ItemGroup>
 
 </Project>
