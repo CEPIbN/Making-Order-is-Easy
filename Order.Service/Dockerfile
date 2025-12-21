@@ -4,14 +4,15 @@ WORKDIR /src
 COPY . .
 
 # восстанавливаем зависимости
-RUN dotnet restore Notification.Service/Notification.Service.csproj
+RUN dotnet restore OrderService/OrderService.csproj
 
 # публикуем сервис
-RUN dotnet publish Notification.Service/Notification.Service.csproj \
+RUN dotnet publish Inventory.Service/Inventory.Service.csproj \
     -c Release \
     -o /app/publish
+
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Notification.Service.dll"]
+ENTRYPOINT ["dotnet", "Order.Service.dll"]

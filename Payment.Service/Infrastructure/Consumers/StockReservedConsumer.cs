@@ -1,12 +1,12 @@
-﻿using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.Hosting;
+﻿using PaymentService.Application.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using OrderService.Application.Saga;
 using Shared.Contracts.Events;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Channels;
 
-namespace OrderService.Infrastructure.Consumers;
+namespace PaymentService.Infrastructure.Consumers;
 
 public class StockReservedConsumer : BackgroundService
 {
@@ -21,6 +21,11 @@ public class StockReservedConsumer : BackgroundService
 		_channel = channel;
 	}
 
+	/// <summary>
+	/// Comsumer слушает очередь StockReserved, запускает логику оплаты заказа
+	/// </summary>
+	/// <param name="stoppingToken"></param>
+	/// <returns></returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		await _channel.QueueDeclareAsync(
@@ -34,21 +39,15 @@ public class StockReservedConsumer : BackgroundService
 		consumer.ReceivedAsync += async (_, ea) =>
 		{
 			using var scope = _scopeFactory.CreateScope();
-			var saga = scope.ServiceProvider.GetRequiredService<OrderSaga>();
+			var service = scope.ServiceProvider.GetRequiredService<PaymentServiceType>();
 
 			var json = Encoding.UTF8.GetString(ea.Body.Span);
+			var evt = JsonSerializer.Deserialize<StockReserved>(json)!;
 
-			if (ea.RoutingKey == nameof(StockReserved))
-			{
-				var evt = JsonSerializer.Deserialize<StockReserved>(json)!;
-				await saga.HandleStockReserved(evt.OrderId);
-			}
-
-			if (ea.RoutingKey == nameof(StockFailed))
-			{
-				var evt = JsonSerializer.Deserialize<StockFailed>(json)!;
-				await saga.HandleFailure(evt.OrderId);
-			}
+			await service.HandleStockReserved(
+				evt.OrderId,
+				amount: evt.Price * evt.Quantity
+			);
 
 			await _channel.BasicAckAsync(ea.DeliveryTag, false);
 		};
@@ -61,4 +60,3 @@ public class StockReservedConsumer : BackgroundService
 		await Task.Delay(Timeout.Infinite, stoppingToken);
 	}
 }
-

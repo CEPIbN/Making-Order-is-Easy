@@ -1,18 +1,18 @@
-﻿using OrderService.Application.Saga;
+﻿using System.Text;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using OrderService.Application.Saga;
 using Shared.Contracts.Events;
-using System.Text;
-using System.Text.Json;
 
 namespace OrderService.Infrastructure.Consumers;
 
-public class PaymentResultConsumer : BackgroundService
+public class StockReservedConsumer : BackgroundService
 {
 	private readonly IServiceScopeFactory _scopeFactory;
 	private readonly IChannel _channel;
 
-	public PaymentResultConsumer(
+	public StockReservedConsumer(
 		IServiceScopeFactory scopeFactory,
 		IChannel channel)
 	{
@@ -23,7 +23,7 @@ public class PaymentResultConsumer : BackgroundService
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		await _channel.QueueDeclareAsync(
-			queue: nameof(PaymentSucceeded),
+			queue: nameof(StockReserved),
 			durable: true,
 			exclusive: false,
 			autoDelete: false);
@@ -37,15 +37,15 @@ public class PaymentResultConsumer : BackgroundService
 
 			var json = Encoding.UTF8.GetString(ea.Body.Span);
 
-			if (ea.RoutingKey == nameof(PaymentSucceeded))
+			if (ea.RoutingKey == nameof(StockReserved))
 			{
-				var evt = JsonSerializer.Deserialize<PaymentSucceeded>(json)!;
-				await saga.HandlePaymentSucceeded(evt.OrderId);
+				var evt = JsonSerializer.Deserialize<StockReserved>(json)!;
+				await saga.HandleStockReserved(evt.OrderId);
 			}
 
-			if (ea.RoutingKey == nameof(PaymentFailed))
+			if (ea.RoutingKey == nameof(StockFailed))
 			{
-				var evt = JsonSerializer.Deserialize<PaymentFailed>(json)!;
+				var evt = JsonSerializer.Deserialize<StockFailed>(json)!;
 				await saga.HandleFailure(evt.OrderId);
 			}
 
@@ -53,10 +53,11 @@ public class PaymentResultConsumer : BackgroundService
 		};
 
 		await _channel.BasicConsumeAsync(
-			queue: nameof(PaymentSucceeded),
+			queue: nameof(StockReserved),
 			autoAck: false,
 			consumer: consumer);
 
 		await Task.Delay(Timeout.Infinite, stoppingToken);
 	}
 }
+

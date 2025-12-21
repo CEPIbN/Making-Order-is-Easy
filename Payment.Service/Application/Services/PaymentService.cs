@@ -16,6 +16,12 @@ public class PaymentServiceType
 		_db = db;
 	}
 
+	/// <summary>
+	/// Добавление сообщения события оплаты в OutBox
+	/// </summary>
+	/// <param name="orderId"></param>
+	/// <param name="amount"></param>
+	/// <returns></returns>
 	public async Task HandleStockReserved(
 		Guid orderId,
 		decimal amount)

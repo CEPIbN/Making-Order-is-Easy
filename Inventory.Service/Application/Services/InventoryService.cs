@@ -21,6 +21,7 @@ public class InventoryServiceType
 	/// <param name="orderId"></param>
 	/// <param name="productId"></param>
 	/// <param name="quantity"></param>
+	/// <param name="price"></param>
 	/// <returns></returns>
 	public async Task HandleOrderCreated(
 		Guid orderId,
