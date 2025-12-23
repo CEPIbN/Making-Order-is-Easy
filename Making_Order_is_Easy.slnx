@@ -1,11 +1,12 @@
 <Solution>
   <Folder Name="/Элементы решения/">
     <File Path=".gitignore" />
+    <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="InventoryService/Inventory.Service.csproj" Id="319ad9bd-5feb-4570-b9d9-fec543b17f13" />
+  <Project Path="Inventory.Service/Inventory.Service.csproj" />
   <Project Path="Notification.Service/Notification.Service.csproj" Id="7b68732a-0948-44dc-87b9-cfdcfd891572" />
-  <Project Path="OrderService/Order.Service.csproj" Id="f57d38b8-d617-402e-8d88-2413321525f9" />
-  <Project Path="PaymentService/Payment.Service.csproj" Id="870f8a75-3dd1-42dc-b945-ac4060b00827" />
+  <Project Path="Order.Service/Order.Service.csproj" />
+  <Project Path="Payment.Service/Payment.Service.csproj" />
   <Project Path="Shared.Contracts/Shared.Contracts.csproj" />
   <Project Path="Shared.OutBox/Shared.OutBox.csproj" Id="70a1d8d1-b005-4b44-bd8c-46cfab45e346" />
 </Solution>

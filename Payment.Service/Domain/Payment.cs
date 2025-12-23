@@ -1,15 +1,15 @@
 ﻿namespace PaymentService.Domain;
 
-public class Payment
+public class PaymentItem
 {
 	public Guid OrderId { get; private set; }
 	public decimal Amount { get; private set; }
 	public bool Succeeded { get; private set; }
 	public DateTime ProcessedAt { get; private set; }
 
-	private Payment() { }
+	private PaymentItem() { }
 
-	public Payment(Guid orderId, decimal amount, bool succeeded)
+	public PaymentItem(Guid orderId, decimal amount, bool succeeded)
 	{
 		OrderId = orderId;
 		Amount = amount;

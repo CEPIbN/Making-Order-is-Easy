@@ -20,7 +20,7 @@ public class CreateOrderCommand
 	/// </summary>
 	public async Task<Tuple<Guid, OrderStatus>> ExecuteAsync(Guid productId, int quantity, decimal price)
 	{
-		var order = new Order(productId, quantity, price);
+		var order = new OrderItem(productId, quantity, price);
 
 		var orderCreatedEvent = new OrderCreated(
 			order.Id,

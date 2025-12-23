@@ -33,7 +33,7 @@ public class PaymentServiceType
 		// Эмуляция списания (80% успеха)
 		var success = _random.Next(1, 100) <= 80;
 
-		var payment = new Payment(orderId, amount, success);
+		var payment = new PaymentItem(orderId, amount, success);
 		_db.Payments.Add(payment);
 
 		if (success)

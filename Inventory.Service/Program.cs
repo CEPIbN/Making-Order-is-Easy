@@ -1,12 +1,11 @@
 using InventoryService.Application.Services;
 using InventoryService.Infrastructure.Consumers;
 using InventoryService.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 using RabbitMQ.Client;
 using Serilog;
 using Shared.OutBox;
-using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,22 +26,35 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 // -------------------- Application --------------------
 builder.Services.AddScoped<InventoryServiceType>();
 
-// -------------------- RabbitMQ --------------------
-builder.Services.AddSingleton<IConnection>(_ =>
-{
-	var factory = new ConnectionFactory { HostName = "rabbitmq" };
-	return factory.CreateConnectionAsync().GetAwaiter().GetResult();
-});
-
-builder.Services.AddSingleton<IChannel>(sp =>
-{
-	var connection = sp.GetRequiredService<IConnection>();
-	return connection.CreateChannelAsync().GetAwaiter().GetResult();
-});
+// -------------------- Фабрика подключений к RabbitMQ --------------------
+builder.Services.AddSingleton<IConnectionFactory>(_ =>
+	new ConnectionFactory
+	{
+		HostName = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq",
+		AutomaticRecoveryEnabled = true,
+		NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
+	});
 
 // -------------------- Messaging --------------------
 builder.Services.AddHostedService<OutboxPublisher<InventoryDbContext>>();
+
+// -------------------- Consumer --------------------
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+	var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+	db.Database.Migrate();
+}
+
+app.UseRouting();
+
+// endpoint /metrics
+app.UseEndpoints(endpoints =>
+{
+	endpoints.MapMetrics();
+});
+
 app.Run();

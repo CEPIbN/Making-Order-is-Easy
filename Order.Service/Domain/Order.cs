@@ -1,6 +1,6 @@
 ﻿namespace OrderService.Domain;
 
-public class Order
+public class OrderItem
 {
 	public Guid Id { get; private set; }
 	public Guid ProductId { get; private set; }
@@ -8,9 +8,9 @@ public class Order
 	public decimal Price { get; private set; }
 	public OrderStatus Status { get; private set; }
 
-	private Order() { }
+	private OrderItem() { }
 
-	public Order(Guid productId, int quantity, decimal price)
+	public OrderItem(Guid productId, int quantity, decimal price)
 	{
 		Id = Guid.NewGuid();
 		ProductId = productId;

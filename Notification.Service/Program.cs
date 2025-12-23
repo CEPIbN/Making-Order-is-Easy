@@ -1,4 +1,5 @@
 using Notification.Service.Infrastructure.Consumers;
+using Prometheus;
 using RabbitMQ.Client;
 using Serilog;
 
@@ -11,29 +12,26 @@ builder.Host.UseSerilog((ctx, lc) =>
 	  .WriteTo.Console();
 });
 
-// -------------------- RabbitMQ --------------------
-builder.Services.AddSingleton<IConnection>(_ =>
-{
-	var factory = new ConnectionFactory
+// -------------------- Фабрика подключений к RabbitMQ --------------------
+builder.Services.AddSingleton<IConnectionFactory>(_ =>
+	new ConnectionFactory
 	{
-		HostName = "rabbitmq"
-	};
-
-	return factory.CreateConnectionAsync()
-				  .GetAwaiter()
-				  .GetResult();
-});
-
-builder.Services.AddSingleton<IChannel>(sp =>
-{
-	var connection = sp.GetRequiredService<IConnection>();
-	return connection.CreateChannelAsync()
-					 .GetAwaiter()
-					 .GetResult();
-});
+		HostName = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq",
+		AutomaticRecoveryEnabled = true,
+		NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
+	});
 
 // -------------------- Consumer --------------------
 builder.Services.AddHostedService<OrderNotificationsConsumer>();
 
 var app = builder.Build();
+
+app.UseRouting();
+
+// endpoint /metrics
+app.UseEndpoints(endpoints =>
+{
+	endpoints.MapMetrics();
+});
+
 app.Run();

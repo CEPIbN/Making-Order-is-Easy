@@ -6,7 +6,7 @@ namespace OrderService.Infrastructure.Persistence;
 
 public class OrderDbContext : DbContext, IOutboxDbContext
 {
-	public DbSet<Order> Orders => Set<Order>();
+	public DbSet<OrderItem> Orders => Set<OrderItem>();
 	public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
 	public OrderDbContext(DbContextOptions<OrderDbContext> options)

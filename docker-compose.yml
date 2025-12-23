@@ -1,0 +1,129 @@
+version: "3.9"
+
+services:
+
+  # -------------------- RabbitMQ --------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------- Order DB --------------------
+  order-db:
+    image: postgres:16
+    container_name: order-db
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+
+  # -------------------- Inventory DB --------------------
+  inventory-db:
+    image: postgres:16
+    container_name: inventory-db
+    environment:
+      POSTGRES_DB: inventory
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+
+  # -------------------- Payment DB --------------------
+  payment-db:
+    image: postgres:16
+    container_name: payment-db
+    environment:
+      POSTGRES_DB: payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+
+  # -------------------- Order Service --------------------
+  order-service:
+    build:
+      context: .
+      dockerfile: Order.Service/Dockerfile
+    container_name: order-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      order-db:
+        condition: service_started
+    environment:
+      ConnectionStrings__Postgres: Host=order-db;Database=orders;Username=postgres;Password=postgres
+      RabbitMq__Host: rabbitmq
+    ports:
+      - "5001:8080"
+
+  # -------------------- Inventory Service --------------------
+  inventory-service:
+    build:
+      context: .
+      dockerfile: Inventory.Service/Dockerfile
+    container_name: inventory-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      inventory-db:
+        condition: service_started
+    environment:
+      ConnectionStrings__Postgres: Host=inventory-db;Database=inventory;Username=postgres;Password=postgres
+      RabbitMq__Host: rabbitmq
+
+  # -------------------- Payment Service --------------------
+  payment-service:
+    build:
+      context: .
+      dockerfile: Payment.Service/Dockerfile
+    container_name: payment-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      payment-db:
+        condition: service_started
+    environment:
+      ConnectionStrings__Postgres: Host=payment-db;Database=payments;Username=postgres;Password=postgres
+      RabbitMq__Host: rabbitmq
+
+  # -------------------- Notification Service --------------------
+  notification-service:
+    build:
+      context: .
+      dockerfile: Notification.Service/Dockerfile
+    container_name: notification-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RabbitMq__Host: rabbitmq
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - order-service
+      - inventory-service
+      - payment-service
+      - notification-service
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

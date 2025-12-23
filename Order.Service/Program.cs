@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderService.Application.Saga;
 using OrderService.Infrastructure.Consumers;
 using OrderService.Infrastructure.Persistence;
+using Prometheus;
 using RabbitMQ.Client;
 using Serilog;
 using Shared.OutBox;
@@ -9,7 +10,11 @@ using Shared.OutBox;
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
-builder.Host.UseSerilog();
+builder.Host.UseSerilog((ctx, lc) =>
+{
+	lc.ReadFrom.Configuration(ctx.Configuration)
+	  .WriteTo.Console();
+});
 
 // -------------------- Controllers --------------------
 builder.Services.AddControllers();
@@ -24,26 +29,14 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 // -------------------- Saga --------------------
 builder.Services.AddScoped<OrderSaga>();
 
-// -------------------- RabbitMQ --------------------
-builder.Services.AddSingleton<IConnection>(_ =>
-{
-	var factory = new ConnectionFactory
+// -------------------- Фабрика подключений к RabbitMQ --------------------
+builder.Services.AddSingleton<IConnectionFactory>(_ =>
+	new ConnectionFactory
 	{
-		HostName = "rabbitmq"
-	};
-
-	return factory.CreateConnectionAsync()
-					.GetAwaiter()
-					.GetResult();
-});
-
-builder.Services.AddSingleton<IChannel>(sp =>
-{
-	var connection = sp.GetRequiredService<IConnection>();
-	return connection.CreateChannelAsync()
-						.GetAwaiter()
-						.GetResult();
-});
+		HostName = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq",
+		AutomaticRecoveryEnabled = true,
+		NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
+	});
 
 // -------------------- Outbox Publisher --------------------
 builder.Services.AddHostedService<OutboxPublisher<OrderDbContext>>();
@@ -53,6 +46,20 @@ builder.Services.AddHostedService<StockReservedConsumer>();
 builder.Services.AddHostedService<PaymentResultConsumer>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+	var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+	db.Database.Migrate();
+}
+
+app.UseRouting();
+
+// endpoint /metrics
+app.UseEndpoints(endpoints =>
+{
+	endpoints.MapMetrics();
+});
 
 app.MapControllers();
 app.Run();
