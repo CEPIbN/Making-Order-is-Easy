@@ -19,25 +19,6 @@ public class OutboxPublisher<TDbContext> : BackgroundService
 	private IConnection? _connection;
 	private IChannel? _channel;
 
-	private static readonly Counter PublishedMessages =
-		Metrics.CreateCounter(
-			"outbox_published_total",
-			"Total number of published outbox messages",
-			new CounterConfiguration
-			{
-				LabelNames = new[] { "service", "event_type" }
-			});
-
-	private static readonly Counter PublishFailures =
-		Metrics.CreateCounter(
-			"outbox_publish_failures_total",
-			"Total number of outbox publish failures");
-
-	private static readonly Histogram PublishDuration =
-		Metrics.CreateHistogram(
-			"outbox_publish_duration_seconds",
-			"Time spent publishing outbox messages");
-
 	public OutboxPublisher(IServiceScopeFactory scopeFactory,
 		IConnectionFactory factory,
 		ILogger<OutboxPublisher<TDbContext>> logger)
